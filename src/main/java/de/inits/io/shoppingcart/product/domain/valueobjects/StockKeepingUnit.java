@@ -24,6 +24,6 @@ public class StockKeepingUnit {
     }
 
     public boolean isSkuEmpty() {
-        return null != sku;
+        return null == sku;
     }
 }

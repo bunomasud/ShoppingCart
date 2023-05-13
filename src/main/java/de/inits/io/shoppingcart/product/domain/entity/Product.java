@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 
 @NoArgsConstructor
@@ -20,10 +21,14 @@ import lombok.Setter;
 @Builder
 public class Product {
 
+    @NonNull
     private StockKeepingUnit sku;
     private ProductStockAmount stockAmount;
+    @NonNull
     private ProductPrice price;
+    @NonNull
     private ProductName name;
+    @NonNull
     private List<EuropeanArticleNumber> europeanArticleNumberList;
 
     public boolean isProductValid() {
@@ -42,7 +47,7 @@ public class Product {
         return this.stockAmount.asLong() < amount;
     }
 
-    public void increaseProductStock(Long addAmount) { //setStock enough just helpers..
+    public void increaseProductStock(Long addAmount) {
         this.stockAmount = ProductStockAmount.of(this.stockAmount.asLong() + addAmount);
     }
 

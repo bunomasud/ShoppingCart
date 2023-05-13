@@ -19,7 +19,8 @@ public class ProductJpaAdapter {
                 .name(product.getName().asString())
                 .price(product.getPrice().asBigDecimal())
                 .stock(product.getStockAmount().asLong())
-                .ean(product.getEuropeanArticleNumberList().stream().findFirst().get().asString()) //hack
+                .ean(product.getEuropeanArticleNumberList().stream().findFirst().get()
+                        .asString()) //hack for now, isPresent??
                 .build();
 
 

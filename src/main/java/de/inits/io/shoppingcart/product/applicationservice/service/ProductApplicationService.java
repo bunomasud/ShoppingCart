@@ -4,6 +4,7 @@ import de.inits.io.shoppingcart.product.applicationservice.commands.AddProductCo
 import de.inits.io.shoppingcart.product.applicationservice.commands.EditProductCommand;
 import de.inits.io.shoppingcart.product.applicationservice.commands.RemoveProductCommand;
 import de.inits.io.shoppingcart.product.applicationservice.commands.setProductStockCommand;
+import de.inits.io.shoppingcart.product.applicationservice.querys.GetProductQuery;
 import de.inits.io.shoppingcart.product.applicationservice.querys.ProductPricingQuery;
 import de.inits.io.shoppingcart.product.applicationservice.querys.ProductStockQuery;
 import de.inits.io.shoppingcart.product.domain.aggregateroot.ProductInventory;
@@ -14,17 +15,16 @@ import de.inits.io.shoppingcart.product.domain.valueobjects.ProductStockAmount;
 import de.inits.io.shoppingcart.product.secondaryportsadapter.port.ProductRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
 public class ProductApplicationService {
 
-    private final ProductRepository repositoryAdapter;
+    private final ProductRepository productRepository;
 
     public ProductApplicationService(ProductRepository repositoryAdapter) {
-        this.repositoryAdapter = repositoryAdapter;
+        this.productRepository = repositoryAdapter;
     }
 
     public void addProduct(AddProductCommand addProductCommand) {
@@ -36,42 +36,54 @@ public class ProductApplicationService {
                 .stockAmount(addProductCommand.stockAmount())
                 .price(addProductCommand.price())
                 .europeanArticleNumberList(eans).build();
-        repositoryAdapter.saveProduct(product);
+        if (product.isProductValid()) {
+            productRepository.saveProduct(product);
+        }
+
     }
 
     public void editProduct(EditProductCommand editProductCommand) {
         List<EuropeanArticleNumber> eans = new ArrayList<>();
         eans.add(editProductCommand.europeanArticleNumber());
-        Product product = repositoryAdapter.getProduct(editProductCommand.sku());
         Product editedProduct = Product.builder()
                 .name(editProductCommand.name())
                 .sku(editProductCommand.sku())
                 .stockAmount(editProductCommand.stockAmount())
                 .price(editProductCommand.price())
                 .europeanArticleNumberList(eans).build();
-        repositoryAdapter.deleteProduct(product);
-        repositoryAdapter.saveProduct(editedProduct);
+        if (editedProduct.isProductValid()) {
+            Optional<Product> productOptional = productRepository.getProduct(editProductCommand.sku());
+            if (productOptional.isPresent()) {
+                productRepository.saveProduct(editedProduct);
+            }
+
+        }
     }
 
     public void deleteProduct(RemoveProductCommand removeProductCommand) {
-        Product product = repositoryAdapter.getProduct(removeProductCommand.sku());
-        repositoryAdapter.deleteProduct(product);
+        Optional<Product> productOptional = productRepository.getProduct(removeProductCommand.sku());
+        productOptional.ifPresent(productRepository::deleteProduct);
+
+    }
+
+    public Optional<Product> getProduct(GetProductQuery query) {
+        return productRepository.getProduct(query.sku());
     }
 
     public ProductPrice getProductPrice(ProductPricingQuery productPricingQuery) {
-        return repositoryAdapter.getProductPrice(productPricingQuery.sku());
+        return productRepository.getProductPrice(productPricingQuery.sku());
     }
 
     public ProductStockAmount getProductStock(ProductStockQuery productStockQuery) {
-        return repositoryAdapter.getProductStockAmount(productStockQuery.sku());
+        return productRepository.getProductStockAmount(productStockQuery.sku());
     }
 
     public void setProductStock(setProductStockCommand setProductStockCommand) {
-        repositoryAdapter.saveProductStockAmount(setProductStockCommand.sku(), setProductStockCommand.stockAmount());
+        productRepository.saveProductStockAmount(setProductStockCommand.sku(), setProductStockCommand.stockAmount());
     }
 
     public ProductInventory getProducts() {
-        return repositoryAdapter.getProductInventory();
+        return productRepository.getProductInventory();
     }
 
 }

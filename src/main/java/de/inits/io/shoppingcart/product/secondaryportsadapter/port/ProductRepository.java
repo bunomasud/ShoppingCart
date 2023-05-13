@@ -9,6 +9,7 @@ import de.inits.io.shoppingcart.product.secondaryportsadapter.adapter.ProductJpa
 import de.inits.io.shoppingcart.product.secondaryportsadapter.repository.ProductOrm;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,17 +35,21 @@ public class ProductRepository {
         repository.delete(productOrm);
     }
 
-    public Product getProduct(StockKeepingUnit sku) {
-        return productMapper.toDomain(repository.findById(sku.asUUID()).get());
+    public Optional<Product> getProduct(StockKeepingUnit sku) {
+        if (repository.findById(sku.asUUID()).isPresent()) {
+            ProductOrm Orm = repository.findById(sku.asUUID()).get();
+            return Optional.of(productMapper.toDomain(Orm));
+        }
+        return Optional.empty();
     }
 
     public ProductStockAmount getProductStockAmount(StockKeepingUnit sku) {
-        return ProductStockAmount.of(repository.findById(sku.asUUID()).get().getStock());
+        return ProductStockAmount.of(repository.findById(sku.asUUID()).get().getStock()); //TODO isPresnt?
     }
 
 
     public void saveProductStockAmount(StockKeepingUnit sku, ProductStockAmount amount) {
-        ProductOrm orm = repository.findById(sku.asUUID()).get();
+        ProductOrm orm = repository.findById(sku.asUUID()).get();//TODO isPresnt?
         orm.setStock(amount.asLong());
         repository.save(orm);
     }
@@ -55,12 +60,7 @@ public class ProductRepository {
 
     public ProductInventory getProductInventory() {
         List<Product> productList = new ArrayList<>();
-        Iterable<ProductOrm> ormIterable = repository.findAll();
-        while (ormIterable.iterator().hasNext()) {
-            ProductOrm orm = ormIterable.iterator().next();
-            productList.add(productMapper.toDomain(orm));
-        }
-
+        repository.findAll().forEach(productOrm -> productList.add(productMapper.toDomain(productOrm)));
         return ProductInventory.builder().products(productList).build();
     }
 }

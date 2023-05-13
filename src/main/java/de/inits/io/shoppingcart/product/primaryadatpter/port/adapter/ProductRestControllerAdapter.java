@@ -4,6 +4,7 @@ import de.inits.io.shoppingcart.product.applicationservice.commands.AddProductCo
 import de.inits.io.shoppingcart.product.applicationservice.commands.EditProductCommand;
 import de.inits.io.shoppingcart.product.applicationservice.commands.RemoveProductCommand;
 import de.inits.io.shoppingcart.product.applicationservice.commands.setProductStockCommand;
+import de.inits.io.shoppingcart.product.applicationservice.querys.GetProductQuery;
 import de.inits.io.shoppingcart.product.applicationservice.querys.ProductPricingQuery;
 import de.inits.io.shoppingcart.product.applicationservice.querys.ProductStockQuery;
 import de.inits.io.shoppingcart.product.domain.aggregateroot.ProductInventory;
@@ -29,12 +30,18 @@ public class ProductRestControllerAdapter {
                 .price(ProductPrice.of(request.getPrice()))
                 .stockAmount(ProductStockAmount.of(request.getStock()))
                 .sku(StockKeepingUnit.of(request.getSku()))
-                .price(ProductPrice.of(request.getPrice())).build();
+                .price(ProductPrice.of(request.getPrice()))
+                .europeanArticleNumber(EuropeanArticleNumber.of(request.getEans().stream().findFirst().get()))
+                .build();//TODO hack :just one for now, is Present?
 
     }
 
     public RemoveProductCommand adaptToRemoveProductCommand(UUID sku) {
         return RemoveProductCommand.builder().sku(StockKeepingUnit.of(sku)).build();
+    }
+
+    public GetProductQuery adaptToGetStockQuery(UUID sku) {
+        return GetProductQuery.builder().sku(StockKeepingUnit.of(sku)).build();
     }
 
     public ProductPricingQuery adaptToProductPricingQuery(UUID sku) {
@@ -57,6 +64,9 @@ public class ProductRestControllerAdapter {
                 .price(ProductPrice.of(request.getPrice()))
                 .stockAmount(ProductStockAmount.of(request.getStock()))
                 .sku(StockKeepingUnit.of(request.getSku()))
+                .europeanArticleNumber(
+                        EuropeanArticleNumber.of(
+                                request.getEans().stream().findFirst().get())) //TODO hack for now., is present?.
                 .price(ProductPrice.of(request.getPrice())).build();
     }
 
@@ -66,7 +76,7 @@ public class ProductRestControllerAdapter {
         return InventoryData.builder().products(productList).build();
     }
 
-    private ProductData adaptToProductData(Product product) {
+    public ProductData adaptToProductData(Product product) {
         return ProductData.builder()
                 .name(product.getName().asString())
                 .price(product.getPrice().asBigDecimal())
