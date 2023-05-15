@@ -1,8 +1,9 @@
 # ShoppingCart#
-Sprint boot prject.
+Spring boot project.
 
-Improvents:
-test coverage
-add profiles
-protocol buffers
+#Improvents:
+#test coverage
+#add profiles
+#protocol buffers
+#graphql
 
