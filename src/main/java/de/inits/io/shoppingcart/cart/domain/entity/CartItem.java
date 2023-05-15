@@ -15,7 +15,7 @@ import lombok.Data;
 @Builder
 public class CartItem {
 
-    private UUID itemId;
+    private Long itemId;
     private CartItemSku sku;
     private CartItemPrice price;
     private CartItemQuantity quantity;

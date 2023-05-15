@@ -2,6 +2,7 @@ package de.inits.io.shoppingcart.cart.applicationservice.service;
 
 import de.inits.io.shoppingcart.cart.applicationservice.commands.CreateCartCommand;
 import de.inits.io.shoppingcart.cart.applicationservice.commands.SetCartAsCheckedOutCommand;
+import de.inits.io.shoppingcart.cart.applicationservice.commands.SetCartAsCurrentCommand;
 import de.inits.io.shoppingcart.cart.applicationservice.commands.UpdateCartCommand;
 import de.inits.io.shoppingcart.cart.applicationservice.querys.GetCartQuery;
 import de.inits.io.shoppingcart.cart.domain.aggregateroot.Cart;
@@ -13,6 +14,7 @@ import de.inits.io.shoppingcart.cart.domain.valueobjects.CartStatusCheckedOut;
 import de.inits.io.shoppingcart.cart.domain.valueobjects.CartStatusCurrent;
 import de.inits.io.shoppingcart.cart.secondaryportsadapter.repository.port.CartJpaRepository;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,19 +36,21 @@ public class CartApplicationService {
     }
 
     public Cart getCart(GetCartQuery cartQuery) {
-        return repositoryAdapter.getCart(cartQuery.ID());
+        return repositoryAdapter.getCart(cartQuery.id());
     }
 
-    public void createNewCart(CreateCartCommand createCartCommand) {
-        Cart newCart = Cart.builder().cartStatus(getDefaultCartStatus()).build();
+    public Cart createNewCart(CreateCartCommand createCartCommand) {
+        Cart cart = new Cart();
+        cart.setCartStatus(getDefaultCartStatus());
         createCartCommand.cartItems()
-                .forEach(cartItem -> newCart.addItem(getCartItemsWithPriceAndStock(cartItem)));
-        repositoryAdapter.saveCart(newCart);
+                .forEach(cartItem -> cart.addItem(getCartItemsWithPriceAndStock(cartItem)));
+        return repositoryAdapter.saveCart(cart);
     }
 
     public void editCart(UpdateCartCommand updateCartCommand) {
         Cart editCart = repositoryAdapter.getCart(updateCartCommand.cartId());
-        if (!editCart.getCartStatus().getCheckedOut().asBoolean()) {
+        if (!editCart.getCartStatus().getCheckedOut()
+                .asBoolean()) {// get me into domain? logic belongs to domain/service?
             updateCartCommand.cartItems()
                     .forEach(cartItem -> editCart.editItem(getCartItemsWithPriceAndStock(cartItem)));
             repositoryAdapter.saveCart(editCart);
@@ -60,8 +64,8 @@ public class CartApplicationService {
         adjustStock(checkOutCart.getCartItems());
     }
 
-    public void setCartAsCurrent(SetCartAsCheckedOutCommand setCartAsCheckedOutCommand) {
-        Cart checkOutCart = repositoryAdapter.getCart(setCartAsCheckedOutCommand.cartId());
+    public void setCartAsCurrent(SetCartAsCurrentCommand setCartAsCurrentCommand) {
+        Cart checkOutCart = repositoryAdapter.getCart(setCartAsCurrentCommand.cartId());
         checkOutCart.getCartStatus().setCartStatusCurrent(CartStatusCurrent.of(true));
         repositoryAdapter.saveCart(checkOutCart);
     }

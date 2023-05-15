@@ -1,8 +1,8 @@
 package de.inits.io.shoppingcart.cart.secondaryportsadapter.repository.port;
 
 import de.inits.io.shoppingcart.cart.domain.aggregateroot.Cart;
+import de.inits.io.shoppingcart.cart.secondaryportsadapter.repository.CartOrm;
 import de.inits.io.shoppingcart.cart.secondaryportsadapter.repository.adapter.mapper.CartJpaAdapter;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,15 +11,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class CartJpaRepository {
 
     private final ICartRepositoryPort iCartRepositoryPort;
+    private final ICartItemRepositoryPort iCartItemRepositoryPort;
     private final CartJpaAdapter cartJpaAdapter;
 
-    public CartJpaRepository(ICartRepositoryPort iCartRepositoryPort, CartJpaAdapter cartJpaAdapter) {
+    public CartJpaRepository(ICartRepositoryPort iCartRepositoryPort, ICartItemRepositoryPort iCartItemRepositoryPort,
+            CartJpaAdapter cartJpaAdapter) {
         this.iCartRepositoryPort = iCartRepositoryPort;
+        this.iCartItemRepositoryPort = iCartItemRepositoryPort;
         this.cartJpaAdapter = cartJpaAdapter;
     }
 
-    public void saveCart(Cart cart) {
-        iCartRepositoryPort.save(cartJpaAdapter.toOrm(cart));
+    public Cart saveCart(Cart cart) {
+        CartOrm orm = cartJpaAdapter.toOrm(cart);
+        orm.getItems().stream().forEach(iCartItemRepositoryPort::save);
+        iCartRepositoryPort.save(orm);
+        return cartJpaAdapter.toDomain(orm);
     }
 
     public Cart getCartByStatusCurrent() {
@@ -27,7 +33,7 @@ public class CartJpaRepository {
                 iCartRepositoryPort.findCartOrmsByCurrentIsTrueAndAndCheckedOutIsFalse().stream().findFirst().get());
     }
 
-    public Cart getCart(UUID id) {
+    public Cart getCart(Long id) {
         return cartJpaAdapter.toDomain(iCartRepositoryPort.findById(id).get());//TODO check isPresent()
     }
 }

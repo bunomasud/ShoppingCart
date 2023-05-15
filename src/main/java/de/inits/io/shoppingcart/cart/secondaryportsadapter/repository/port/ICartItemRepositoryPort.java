@@ -1,14 +1,11 @@
 package de.inits.io.shoppingcart.cart.secondaryportsadapter.repository.port;
 
+import de.inits.io.shoppingcart.cart.secondaryportsadapter.repository.CartItemOrm;
 import de.inits.io.shoppingcart.cart.secondaryportsadapter.repository.CartOrm;
-import java.util.List;
-import java.util.UUID;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ICartRepositoryPort extends CrudRepository<CartOrm, Long> {
-
-    List<CartOrm> findCartOrmsByCurrentIsTrueAndAndCheckedOutIsFalse();
+public interface ICartItemRepositoryPort extends CrudRepository<CartItemOrm, Long> {
 
 }

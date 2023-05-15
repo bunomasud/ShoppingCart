@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
 
-public record UpdateCartCommand(UUID cartId, List<CartItem> cartItems) {
+public record UpdateCartCommand(long cartId, List<CartItem> cartItems) {
 
     @Builder
     public UpdateCartCommand {

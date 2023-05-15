@@ -1,6 +1,5 @@
 package de.inits.io.shoppingcart.cart.primaryadatpter.port.rest;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartRequestData {
+public class CartItemRequestData {
 
-    private List<CartItemRequestData> items;
+    private long quantity;
+    private String sku;
 }
