@@ -31,7 +31,7 @@ public class CartApplicationService {
     }
 
     public Cart getCurrentCart() {
-        //Hack Multiple as Current possible, must save others as non-current??
+        //TODO: Hack.. Multiple as Current possible, must save others as non-current??
         return repositoryAdapter.getCartByStatusCurrent();
     }
 
@@ -49,12 +49,9 @@ public class CartApplicationService {
 
     public void editCart(UpdateCartCommand updateCartCommand) {
         Cart editCart = repositoryAdapter.getCart(updateCartCommand.cartId());
-        if (!editCart.getCartStatus().getCheckedOut()
-                .asBoolean()) {// get me into domain? logic belongs to domain/service?
-            updateCartCommand.cartItems()
-                    .forEach(cartItem -> editCart.editItem(getCartItemsWithPriceAndStock(cartItem)));
-            repositoryAdapter.saveCart(editCart);
-        }
+        updateCartCommand.cartItems().forEach(cartItem -> editCart.editItem(getCartItemsWithPriceAndStock(cartItem)));
+        repositoryAdapter.saveCart(editCart);
+
     }
 
     public void checkOutCart(SetCartAsCheckedOutCommand setCartAsCheckedOutCommand) {

@@ -2,21 +2,14 @@ package de.inits.io.shoppingcart.cart.domain.aggregateroot;
 
 import de.inits.io.shoppingcart.cart.domain.entity.CartItem;
 import de.inits.io.shoppingcart.cart.domain.entity.CartStatus;
-import de.inits.io.shoppingcart.cart.domain.valueobjects.CartItemStockAmount;
 import de.inits.io.shoppingcart.cart.domain.valueobjects.CartTotalPrice;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.Singular;
 
 @AllArgsConstructor
 @Data
@@ -37,21 +30,26 @@ public class Cart {
         return false;
     }
 
-    public void editItem(CartItem editItem) {
-
-        Optional<CartItem> itemToEditOptional = getEditOptional(editItem);
-        if (itemToEditOptional.isPresent()) {
-            CartItem itemToEdit = itemToEditOptional.get();
-            if (isItemStockAvailable(editItem)) {
-                resetTotalPrice(editItem, itemToEdit);
-                itemToEdit.setQuantity(editItem.getQuantity());
-                itemToEdit.setSku(editItem.getSku());
-                itemToEdit.setPrice(editItem.getPrice());
-                itemToEdit.setStockAmount(itemToEdit.getStockAmount());
+    public boolean editItem(CartItem editItem) {
+        if (!this.getCartStatus().getCheckedOut()
+                .asBoolean()) {
+            Optional<CartItem> itemToEditOptional = getEditOptional(editItem);
+            if (itemToEditOptional.isPresent()) {
+                CartItem itemToEdit = itemToEditOptional.get();
+                if (isItemStockAvailable(editItem)) {
+                    resetTotalPrice(editItem, itemToEdit);
+                    itemToEdit.setQuantity(editItem.getQuantity());
+                    itemToEdit.setSku(editItem.getSku());
+                    itemToEdit.setPrice(editItem.getPrice());
+                    itemToEdit.setStockAmount(itemToEdit.getStockAmount());
+                    return true;
+                }
+            } else {
+                addItem(editItem);
+                return true;
             }
-        } else {
-            addItem(editItem);
         }
+        return false;
     }
 
     private void resetTotalPrice(CartItem editItem, CartItem itemToEdit) {
